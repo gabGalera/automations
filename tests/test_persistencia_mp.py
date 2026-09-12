@@ -65,3 +65,21 @@ def test_writer_csv_preserva_colunas_mp_e_tuplas_em_controle(tmp_path: Path):
     assert relido2[0]["Confirmacao MP"] == -80
     assert relido2[0]["Data Recibo MP"] == date(2026, 4, 2)
     assert vistas_de_controle(controle2) == {("176784155259", -80, date(2026, 4, 2))}
+
+
+def test_cursor_grande_nao_cabe_numa_celula_e_sobrevive_ao_xlsx(tmp_path: Path):
+    from consolidacao_base_2.persistencia import CHAVE_TUPLAS_MP
+
+    vistas = {(str(i), 1, date(2026, 1, 1)) for i in range(2500)}
+    caminho = tmp_path / "output.xlsx"
+    gravar_output(
+        caminho,
+        [],
+        hostname_permitido="DaniGalera",
+        controle=controle_com_vistas(vistas),
+    )
+    _, controle = carregar_consolidado(caminho)
+
+    assert CHAVE_TUPLAS_MP not in controle
+    assert any(str(chave).startswith("tuplas_mp_") for chave in controle)
+    assert vistas_de_controle(controle) == vistas

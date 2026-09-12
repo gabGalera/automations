@@ -28,3 +28,8 @@ def test_desligar_mp_nao_controla_watcher_csv():
         pid=10,
         meu_pid=1,
     )
+    assert not eh_processo_a_controlar(
+        r'"C:\Python\pythonw.exe" -m consolidacao_base_2',
+        pid=10,
+        meu_pid=1,
+    )

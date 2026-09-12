@@ -16,12 +16,7 @@ def eh_comando_watcher(command_line: str | None, pid: int, meu_pid: int) -> bool
 
 
 def eh_processo_a_controlar(command_line: str | None, pid: int, meu_pid: int) -> bool:
-    if pid == meu_pid or not command_line:
-        return False
-    if eh_comando_watcher(command_line, pid, meu_pid):
-        return True
-    compacto = " ".join(command_line.replace("\\", "/").lower().split())
-    return "-m consolidacao_base_2" in compacto and MARCA_WATCHER not in compacto
+    return eh_comando_watcher(command_line, pid, meu_pid)
 
 
 def pythonw_path() -> str:

@@ -14,8 +14,8 @@ from consolidacao_base_1.persistencia import carregar_consolidado, gravar_output
 from consolidacao_base_2.motor import apply_confirmacoes_mp
 from consolidacao_base_2.pasta import ARQUIVO_MP, eh_origem_mp, ler_xlsx_mp
 from consolidacao_base_2.persistencia import (
-    CHAVE_TUPLAS_MP,
     controle_com_vistas,
+    tem_cursor,
     vistas_de_controle,
 )
 
@@ -32,17 +32,7 @@ def hostname_ok(atual: str | None = None) -> bool:
     return (atual or socket.gethostname()) == HOSTNAME_PERMITIDO
 
 
-def _primeira_largada(pasta: Path) -> bool:
-    destino = pasta / ARQUIVO_OUTPUT
-    try:
-        _, controle = carregar_consolidado(destino)
-    except OSError as extra:
-        print(f"Falha ao ler {destino}: {extra}", file=sys.stderr, flush=True)
-        return False
-    return CHAVE_TUPLAS_MP not in controle
-
-
-def sincronizar_mp(pasta: Path, *, semear: bool = False) -> None:
+def sincronizar_mp(pasta: Path, *, semear: bool | None = None) -> None:
     origem = pasta / ARQUIVO_MP
     if not origem.is_file():
         return
@@ -60,10 +50,12 @@ def sincronizar_mp(pasta: Path, *, semear: bool = False) -> None:
         print(f"Falha ao ler {destino}: {extra}", file=sys.stderr, flush=True)
         return
     vistas = vistas_de_controle(controle)
+    if semear is None:
+        semear = not tem_cursor(controle)
     novo_consolidado, novas_vistas = apply_confirmacoes_mp(
         consolidado, lote, vistas, semear=semear
     )
-    if novas_vistas == vistas:
+    if not semear and novas_vistas == vistas:
         return
     gravar_output(
         destino,
@@ -82,7 +74,7 @@ def processar_origem(caminho: Path, pasta: Path) -> None:
 
     def disparar() -> None:
         with _proc_lock:
-            sincronizar_mp(pasta, semear=False)
+            sincronizar_mp(pasta)
 
     anterior = _debounce.get(chave)
     if anterior is not None:
@@ -137,7 +129,7 @@ def observar(pasta: Path | None = None) -> None:
         sys.exit(1)
     try:
         with _proc_lock:
-            sincronizar_mp(pasta, semear=_primeira_largada(pasta))
+            sincronizar_mp(pasta)
         observer = Observer()
         observer.schedule(HandlerMp(pasta), str(pasta), recursive=False)
         observer.start()

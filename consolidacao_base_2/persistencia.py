@@ -4,18 +4,46 @@ import json
 from datetime import date
 
 CHAVE_TUPLAS_MP = "tuplas_mp"
+_PREFIXO_SHARD = CHAVE_TUPLAS_MP + "_"
+_LIMITE_CELULA = 32000
+
+
+def tem_cursor(controle: dict | None) -> bool:
+    if not controle:
+        return False
+    return CHAVE_TUPLAS_MP in controle or any(
+        str(chave).startswith(_PREFIXO_SHARD) for chave in controle
+    )
 
 
 def controle_com_vistas(vistas: set, controle: dict | None = None) -> dict:
-    dados = dict(controle or {})
-    dados[CHAVE_TUPLAS_MP] = _serializar_vistas(vistas)
+    dados = {
+        chave: valor
+        for chave, valor in dict(controle or {}).items()
+        if chave != CHAVE_TUPLAS_MP and not str(chave).startswith(_PREFIXO_SHARD)
+    }
+    bruto = _serializar_vistas(vistas)
+    if not bruto:
+        dados[_PREFIXO_SHARD + "0"] = "[]"
+        return dados
+    for i in range(0, len(bruto), _LIMITE_CELULA):
+        dados[_PREFIXO_SHARD + str(i // _LIMITE_CELULA)] = bruto[i : i + _LIMITE_CELULA]
     return dados
 
 
 def vistas_de_controle(controle: dict | None) -> set:
     if not controle:
         return set()
-    return _desserializar_vistas(controle.get(CHAVE_TUPLAS_MP))
+    if CHAVE_TUPLAS_MP in controle:
+        return _desserializar_vistas(controle.get(CHAVE_TUPLAS_MP))
+    partes = []
+    indice = 0
+    while _PREFIXO_SHARD + str(indice) in controle:
+        partes.append(str(controle[_PREFIXO_SHARD + str(indice)] or ""))
+        indice += 1
+    if not partes:
+        return set()
+    return _desserializar_vistas("".join(partes))
 
 
 def _serializar_vistas(vistas: set) -> str:
