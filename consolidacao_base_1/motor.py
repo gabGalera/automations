@@ -64,15 +64,19 @@ def _aplicar_transacao(consolidado: list[dict], csv_row: dict, chave: str) -> li
 
 def _esqueleto(transacao: dict) -> dict:
     row = dict(transacao)
-    for col in COLUNAS_RECEBIVEL + COLUNAS_CONFIRMACAO_MP:
+    for col in COLUNAS_RECEBIVEL:
         row[col] = ""
-    return row
+    return _com_confirmacao_mp_vazia(row)
 
 
 def _linha_so_recebivel(chave: str, recebivel: dict) -> dict:
     row = {col: "" for col in COLUNAS_TRANSACAO}
     row[ID_ADQUIRENTE] = chave
     row.update(recebivel)
+    return _com_confirmacao_mp_vazia(row)
+
+
+def _com_confirmacao_mp_vazia(row: dict) -> dict:
     for col in COLUNAS_CONFIRMACAO_MP:
         row[col] = ""
     return row
@@ -99,9 +103,7 @@ def _aplicar_recebivel(consolidado: list[dict], csv_row: dict, chave: str) -> li
     nova = {col: base.get(col, "") for col in COLUNAS_TRANSACAO}
     nova[ID_ADQUIRENTE] = chave
     nova.update(mapped)
-    for col in COLUNAS_CONFIRMACAO_MP:
-        nova[col] = ""
-    consolidado.append(nova)
+    consolidado.append(_com_confirmacao_mp_vazia(nova))
     return consolidado
 
 

@@ -207,6 +207,31 @@ def test_transacao_substitui_colunas_sem_apagar_confirmacao_mp():
     assert consolidado[0]["Data Recibo MP"] == date(2026, 4, 8)
 
 
+def test_transacao_substitui_todas_as_linhas_do_id_sem_apagar_mp():
+    id_ = "176784155259"
+    consolidado = apply_lote([], {"tipo": "transacao", "linhas": [_transacao()]})
+    rec = _recebivel(**{"ID Trans. Adquirente": id_, "Parcela Recebivel": "1"})
+    consolidado = apply_lote(consolidado, {"tipo": "recebivel", "linhas": [rec, rec]})
+    consolidado[0]["Confirmacao MP"] = 80.0
+    consolidado[0]["Data Recibo MP"] = date(2026, 4, 2)
+    consolidado[1]["Confirmacao MP"] = -80.0
+    consolidado[1]["Data Recibo MP"] = date(2026, 4, 8)
+    consolidado = apply_lote(
+        consolidado,
+        {
+            "tipo": "transacao",
+            "linhas": [_transacao(**{"ID Trans. Adquirente": id_, "Cliente": "TODAS"})],
+        },
+    )
+
+    assert len(consolidado) == 2
+    assert all(r["Cliente"] == "TODAS" for r in consolidado)
+    assert consolidado[0]["Confirmacao MP"] == 80.0
+    assert consolidado[1]["Confirmacao MP"] == -80.0
+    assert consolidado[0]["Parcela Recebivel"] == "1"
+    assert consolidado[1]["Parcela Recebivel"] == "1"
+
+
 def test_recebivel_preenche_estorno_sem_mexer_na_confirmacao_mp():
     id_ = "176784155259"
     consolidado = apply_lote([], {"tipo": "transacao", "linhas": [_transacao()]})
