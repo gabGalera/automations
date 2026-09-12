@@ -11,11 +11,16 @@ from openpyxl.styles import numbers
 from openpyxl.utils.exceptions import InvalidFileException
 from openpyxl.workbook.workbook import Workbook as WorkbookType
 
-from consolidacao_base_1.motor import COLUNAS_RECEBIVEL, COLUNAS_TRANSACAO, ID_ADQUIRENTE
+from consolidacao_base_1.motor import (
+    COLUNAS_CONFIRMACAO_MP,
+    COLUNAS_RECEBIVEL,
+    COLUNAS_TRANSACAO,
+    ID_ADQUIRENTE,
+)
 
 ABA_CONSOLIDADO = "consolidado"
 ABA_CONTROLE = "controle"
-CABECALHO = COLUNAS_TRANSACAO + COLUNAS_RECEBIVEL
+CABECALHO = COLUNAS_TRANSACAO + COLUNAS_RECEBIVEL + COLUNAS_CONFIRMACAO_MP
 COLUNAS_TEXTO = {
     ID_ADQUIRENTE,
     "ID Transacao",
@@ -47,6 +52,7 @@ def gravar_output(
     consolidado: list[dict],
     hostname_permitido: str,
     *,
+    controle: dict | None = None,
     agora: callable | None = None,
     dormir: callable | None = None,
 ) -> None:
@@ -56,11 +62,8 @@ def gravar_output(
     default = wb.active
     default.title = ABA_CONSOLIDADO
     _escrever_consolidado(default, consolidado)
-    controle = wb.create_sheet(ABA_CONTROLE)
-    controle["A1"] = "chave"
-    controle["B1"] = "valor"
-    controle["A2"] = "hostname_permitido"
-    controle["B2"] = hostname_permitido
+    aba_controle = wb.create_sheet(ABA_CONTROLE)
+    _escrever_controle(aba_controle, hostname_permitido, controle)
     _salvar_com_retry(wb, caminho, agora, dormir)
 
 
@@ -132,7 +135,7 @@ def _set_cell(cell: Cell, nome: str, valor) -> None:
     if valor == "" or valor is None:
         cell.value = None
         return
-    if nome in ("data", "Data Repasse") and isinstance(valor, date) and not isinstance(valor, datetime):
+    if nome in ("data", "Data Repasse", "Data Recibo MP") and isinstance(valor, date) and not isinstance(valor, datetime):
         cell.value = valor
         cell.number_format = "DD/MM/YYYY"
         return
@@ -169,7 +172,7 @@ def _ler_consolidado(wb: WorkbookType) -> list[dict]:
 def _de_excel(nome: str, valor):
     if valor is None:
         return ""
-    if nome in ("data", "Data Repasse"):
+    if nome in ("data", "Data Repasse", "Data Recibo MP"):
         if isinstance(valor, datetime):
             return valor.date()
         if isinstance(valor, date):
@@ -180,6 +183,17 @@ def _de_excel(nome: str, valor):
         if isinstance(valor, time):
             return valor.replace(microsecond=0)
     return valor if valor is not None else ""
+
+
+def _escrever_controle(ws, hostname_permitido: str, controle: dict | None) -> None:
+    ws["A1"] = "chave"
+    ws["B1"] = "valor"
+    dados = dict(controle or {})
+    dados["hostname_permitido"] = hostname_permitido
+    chaves = ["hostname_permitido"] + [k for k in dados if k != "hostname_permitido"]
+    for i, chave in enumerate(chaves, start=2):
+        ws.cell(i, 1, chave)
+        ws.cell(i, 2, dados[chave])
 
 
 def _ler_controle(wb: WorkbookType) -> dict:

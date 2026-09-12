@@ -31,6 +31,11 @@ COLUNAS_RECEBIVEL = [
     "Data Repasse",
 ]
 
+COLUNAS_CONFIRMACAO_MP = [
+    "Confirmacao MP",
+    "Data Recibo MP",
+]
+
 
 def apply_lote(consolidado: list[dict], lote: dict) -> list[dict]:
     resultado = [dict(linha) for linha in consolidado]
@@ -59,7 +64,7 @@ def _aplicar_transacao(consolidado: list[dict], csv_row: dict, chave: str) -> li
 
 def _esqueleto(transacao: dict) -> dict:
     row = dict(transacao)
-    for col in COLUNAS_RECEBIVEL:
+    for col in COLUNAS_RECEBIVEL + COLUNAS_CONFIRMACAO_MP:
         row[col] = ""
     return row
 
@@ -68,6 +73,8 @@ def _linha_so_recebivel(chave: str, recebivel: dict) -> dict:
     row = {col: "" for col in COLUNAS_TRANSACAO}
     row[ID_ADQUIRENTE] = chave
     row.update(recebivel)
+    for col in COLUNAS_CONFIRMACAO_MP:
+        row[col] = ""
     return row
 
 
@@ -92,6 +99,8 @@ def _aplicar_recebivel(consolidado: list[dict], csv_row: dict, chave: str) -> li
     nova = {col: base.get(col, "") for col in COLUNAS_TRANSACAO}
     nova[ID_ADQUIRENTE] = chave
     nova.update(mapped)
+    for col in COLUNAS_CONFIRMACAO_MP:
+        nova[col] = ""
     consolidado.append(nova)
     return consolidado
 

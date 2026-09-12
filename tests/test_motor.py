@@ -72,6 +72,8 @@ def test_transacao_nova_vira_esqueleto_sem_ultima_atualizacao():
     assert linha["Parcela Recebivel"] == ""
     assert linha["taxa % cliente"] == ""
     assert linha["Data Repasse"] == ""
+    assert linha["Confirmacao MP"] == ""
+    assert linha["Data Recibo MP"] == ""
 
 
 def _recebivel(**overrides):
@@ -184,3 +186,76 @@ def test_data_hora_com_espacos_extras_ainda_parte():
     )
     assert resultado[0]["data"] == date(2026, 9, 7)
     assert resultado[0]["hora"] == time(11, 59, 50)
+
+
+def test_transacao_substitui_colunas_sem_apagar_confirmacao_mp():
+    id_ = "176784155259"
+    consolidado = apply_lote([], {"tipo": "transacao", "linhas": [_transacao()]})
+    consolidado[0]["Confirmacao MP"] = 80.0
+    consolidado[0]["Data Recibo MP"] = date(2026, 4, 8)
+    consolidado = apply_lote(
+        consolidado,
+        {
+            "tipo": "transacao",
+            "linhas": [_transacao(**{"ID Trans. Adquirente": id_, "Cliente": "NOVO"})],
+        },
+    )
+
+    assert len(consolidado) == 1
+    assert consolidado[0]["Cliente"] == "NOVO"
+    assert consolidado[0]["Confirmacao MP"] == 80.0
+    assert consolidado[0]["Data Recibo MP"] == date(2026, 4, 8)
+
+
+def test_recebivel_preenche_estorno_sem_mexer_na_confirmacao_mp():
+    id_ = "176784155259"
+    consolidado = apply_lote([], {"tipo": "transacao", "linhas": [_transacao()]})
+    consolidado = apply_lote(
+        consolidado,
+        {
+            "tipo": "recebivel",
+            "linhas": [_recebivel(**{"ID Trans. Adquirente": id_, "Parcela Recebivel": "1"})],
+        },
+    )
+    estorno = {
+        **{k: consolidado[0][k] for k in consolidado[0]},
+        "Parcela Recebivel": "",
+        "Total Parcelas": "",
+        "taxa % cliente": "",
+        "taxa valor cliente": "",
+        "Valor Repasse": "",
+        "Data Repasse": "",
+        "Confirmacao MP": -80.0,
+        "Data Recibo MP": date(2026, 4, 8),
+    }
+    consolidado.append(estorno)
+    consolidado = apply_lote(
+        consolidado,
+        {
+            "tipo": "recebivel",
+            "linhas": [_recebivel(**{"ID Trans. Adquirente": id_, "Parcela Recebivel": "2"})],
+        },
+    )
+
+    assert len(consolidado) == 2
+    assert consolidado[0]["Parcela Recebivel"] == "1"
+    assert consolidado[1]["Parcela Recebivel"] == "2"
+    assert consolidado[1]["Confirmacao MP"] == -80.0
+    assert consolidado[1]["Data Recibo MP"] == date(2026, 4, 8)
+    assert consolidado[1]["Cliente"] == "TAXIBUS TRANSPORTES"
+
+
+def test_recebivel_sem_vaga_entra_linha_nova_com_mp_vazio():
+    consolidado = apply_lote([], {"tipo": "transacao", "linhas": [_transacao()]})
+    rec = _recebivel(**{"ID Trans. Adquirente": "176784155259", "Parcela Recebivel": "1"})
+    consolidado = apply_lote(consolidado, {"tipo": "recebivel", "linhas": [rec]})
+    consolidado[0]["Confirmacao MP"] = 79.6
+    consolidado[0]["Data Recibo MP"] = date(2026, 4, 2)
+    consolidado = apply_lote(consolidado, {"tipo": "recebivel", "linhas": [rec]})
+
+    assert len(consolidado) == 2
+    assert consolidado[0]["Confirmacao MP"] == 79.6
+    assert consolidado[1]["Parcela Recebivel"] == "1"
+    assert consolidado[1]["Confirmacao MP"] == ""
+    assert consolidado[1]["Data Recibo MP"] == ""
+    assert consolidado[1]["Cliente"] == "TAXIBUS TRANSPORTES"

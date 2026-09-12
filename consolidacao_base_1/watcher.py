@@ -68,13 +68,13 @@ def _processar_arquivo_locked(caminho: Path, pasta: Path) -> None:
         return
     destino = pasta / ARQUIVO_OUTPUT
     try:
-        consolidado, _controle = carregar_consolidado(destino)
+        consolidado, controle = carregar_consolidado(destino)
     except OSError as extra:
         print(f"Falha ao ler {destino}: {extra}", file=sys.stderr, flush=True)
         aviso("Consolidação base_1", f"Não deu para ler o output.xlsx:\n{extra}", erro=True)
         return
     consolidado = apply_lote(consolidado, {"tipo": tipo, "linhas": linhas})
-    gravar_output(destino, consolidado, HOSTNAME_PERMITIDO)
+    gravar_output(destino, consolidado, HOSTNAME_PERMITIDO, controle=controle)
     _ultimo_ok[chave] = time.monotonic()
 
 
