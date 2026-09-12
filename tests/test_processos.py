@@ -32,3 +32,11 @@ def test_legado_sem_marca_watcher_ainda_e_controlado():
         pid=1,
         meu_pid=1,
     )
+
+
+def test_desligar_csv_nao_controla_watcher_mp():
+    from consolidacao_base_1.processos import eh_processo_a_controlar
+
+    cmd = r'"C:\Python\pythonw.exe" -m consolidacao_base_2.watcher'
+    assert not eh_comando_watcher(cmd, pid=10, meu_pid=1)
+    assert not eh_processo_a_controlar(cmd, pid=10, meu_pid=1)
