@@ -16,7 +16,7 @@
 
 ## Answer
 
-Watcher de `consolidacao_base_2` observa só `Recebimentos_MP.xlsx` (`modified` / `created` / `moved`), espera tamanho estável + debounce de 4s, relê `output.xlsx`, aplica e grava. Largada semeia o cursor sem mutar o consolidado. Origem só é lida.
+Watcher de `consolidacao_base_2` observa só `Recebimentos_MP.xlsx` (`modified` / `created` / `moved`), espera tamanho estável + debounce de 4s, relê `output.xlsx`, aplica e grava. Primeira largada (sem `tuplas_mp` em `controle`) só semeia o cursor; relargada aplica o que chegou com o processo morto. Origem só é lida.
 
 - `python -m consolidacao_base_2.watcher`
 - `consolidacao_base_2/watcher.py`: `sincronizar_mp`, `observar`

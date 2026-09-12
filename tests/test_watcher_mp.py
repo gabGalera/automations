@@ -6,7 +6,7 @@ from openpyxl import Workbook
 from consolidacao_base_1.persistencia import carregar_consolidado, gravar_output
 from consolidacao_base_2.pasta import eh_origem_mp, ler_xlsx_mp
 from consolidacao_base_2.persistencia import vistas_de_controle
-from consolidacao_base_2.watcher import sincronizar_mp
+from consolidacao_base_2.watcher import _primeira_largada, sincronizar_mp
 
 
 def _escrever_mp(caminho: Path, linhas: list[dict]) -> None:
@@ -99,3 +99,44 @@ def test_tupla_nova_depois_da_semente_entra_e_repetida_e_noop(tmp_path: Path):
     consolidado2, controle2 = carregar_consolidado(tmp_path / "output.xlsx")
     assert consolidado2 == consolidado
     assert vistas_de_controle(controle2) == vistas
+
+
+def test_relargada_aplica_tupla_que_chegou_com_o_processo_morto(tmp_path: Path):
+    origem = tmp_path / "Recebimentos_MP.xlsx"
+    _escrever_mp(
+        origem,
+        [
+            {
+                "ID Trans. Adquirente": "176784155259",
+                "Confirmacao MP": 80,
+                "Data Recibo MP": date(2026, 4, 2),
+            }
+        ],
+    )
+    gravar_output(tmp_path / "output.xlsx", [], "DaniGalera")
+    sincronizar_mp(tmp_path, semear=_primeira_largada(tmp_path))
+
+    _escrever_mp(
+        origem,
+        [
+            {
+                "ID Trans. Adquirente": "176784155259",
+                "Confirmacao MP": 80,
+                "Data Recibo MP": date(2026, 4, 2),
+            },
+            {
+                "ID Trans. Adquirente": "176784155259",
+                "Confirmacao MP": -80,
+                "Data Recibo MP": date(2026, 4, 2),
+            },
+        ],
+    )
+    sincronizar_mp(tmp_path, semear=_primeira_largada(tmp_path))
+
+    consolidado, controle = carregar_consolidado(tmp_path / "output.xlsx")
+    assert [row["Confirmacao MP"] for row in consolidado] == [-80]
+    assert vistas_de_controle(controle) == {
+        ("176784155259", 80, date(2026, 4, 2)),
+        ("176784155259", -80, date(2026, 4, 2)),
+    }
+
