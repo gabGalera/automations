@@ -1,0 +1,10 @@
+automacoes:
+  - id: consolidacao_base_1
+    titulo: Consolidação transações/recebíveis
+    modulo: consolidacao_base_1
+    pasta: "C:/Users/danig/OneDrive/Área de Trabalho/automacoes/dados/base_1"
+
+  - id: consolidacao_base_2
+    titulo: Confirmação MP
+    modulo: consolidacao_base_2
+    pasta: "C:/Users/danig/OneDrive/Área de Trabalho/automacoes/dados/base_1"

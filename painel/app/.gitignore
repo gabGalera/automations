@@ -1,0 +1,9 @@
+node_modules/
+windows/x64/
+windows/ARM64/
+windows/Win32/
+windows/.vs/
+*.user
+*.suo
+Bundle/
+*.binlog
