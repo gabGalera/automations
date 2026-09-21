@@ -1,3 +1,4 @@
+# DEPRECATED: use painel/ (React Native Windows). Mantido até migração estável.
 from __future__ import annotations
 
 import tkinter as tk

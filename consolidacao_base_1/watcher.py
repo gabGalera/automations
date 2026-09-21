@@ -22,7 +22,9 @@ from consolidacao_base_1.pasta import (
 from consolidacao_base_1.persistencia import carregar_consolidado, gravar_output
 
 HOSTNAME_PERMITIDO = "DaniGalera"
-PASTA_PADRAO = Path(r"H:\Meu Drive\AUTOMACOES\dados\base_1")
+PASTA_PADRAO = Path(
+    r"C:\Users\danig\OneDrive\Área de Trabalho\automacoes\dados\base_1"
+)
 ARQUIVO_OUTPUT = "output.xlsx"
 INTERVALO_POLL_S = 1.0
 DEBOUNCE_PROC_S = 4.0

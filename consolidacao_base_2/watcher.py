@@ -20,7 +20,9 @@ from consolidacao_base_2.persistencia import (
 )
 
 HOSTNAME_PERMITIDO = "DaniGalera"
-PASTA_PADRAO = Path(r"H:\Meu Drive\AUTOMACOES\dados\base_1")
+PASTA_PADRAO = Path(
+    r"C:\Users\danig\OneDrive\Área de Trabalho\automacoes\dados\base_1"
+)
 ARQUIVO_OUTPUT = "output.xlsx"
 DEBOUNCE_PROC_S = 4.0
 
