@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 01: Seam do motor
 
@@ -6,18 +6,18 @@ Status: ready-for-agent
 
 **Blocked by:** None (can start immediately)
 
-- [ ] Id vazio descartado nas três pontas; id vira texto estável, sem notação científica
-- [ ] Transação nova vira esqueleto (sem `Ultima Atualizacao`, `Data/Hora` partida em `data` e `hora`, confirmação MP vazia); `Status` `Estornado` não cria linha; taxa negativa não cria estorno
-- [ ] Segunda transação do mesmo id substitui só colunas de transação em todas as linhas daquele id
-- [ ] Parcela nova preenche a primeira vaga sem recebível que não seja estorno; sem vaga, entra em linha nova
-- [ ] A mesma parcela (id + número), com valor positivo, substitui só colunas de recebível e preserva a confirmação MP
-- [ ] Estorno (confirmação MP negativa) nasce sem parcela e não a recebe depois; a parcela desse id entra em outra linha; a linha de estorno copia as colunas de transação da primeira linha daquele id, se existir
-- [ ] Confirmação positiva ocupa a linha sem confirmação de Data Repasse mais cedo; a mesma tupla não reaplica; outra data aplica
-- [ ] No mesmo lote, positivos antes dos negativos, cada grupo por data do recibo
-- [ ] Id sem transação e sem recebível vai para a Maquinha e a tupla fica pendente
-- [ ] Chegada de transação ou recebível desse id tira o id da Maquinha e aplica as tuplas pendentes depois do lote, com a mesma regra de positivo e estorno
-- [ ] Três chamadas em sequência (transação, recebível, confirmação MP) produzem o estado final da largada
-- [ ] Testes só deste seam, fixtures em memória, sem arquivo, Excel, watcher ou ordem de log
+- [x] Id vazio descartado nas três pontas; id vira texto estável, sem notação científica
+- [x] Transação nova vira esqueleto (sem `Ultima Atualizacao`, `Data/Hora` partida em `data` e `hora`, confirmação MP vazia); `Status` `Estornado` não cria linha; taxa negativa não cria estorno
+- [x] Segunda transação do mesmo id substitui só colunas de transação em todas as linhas daquele id
+- [x] Parcela nova preenche a primeira vaga sem recebível que não seja estorno; sem vaga, entra em linha nova
+- [x] A mesma parcela (id + número), com valor positivo, substitui só colunas de recebível e preserva a confirmação MP
+- [x] Estorno (confirmação MP negativa) nasce sem parcela e não a recebe depois; a parcela desse id entra em outra linha; a linha de estorno copia as colunas de transação da primeira linha daquele id, se existir
+- [x] Confirmação positiva ocupa a linha sem confirmação de Data Repasse mais cedo; a mesma tupla não reaplica; outra data aplica
+- [x] No mesmo lote, positivos antes dos negativos, cada grupo por data do recibo
+- [x] Id sem transação e sem recebível vai para a Maquinha e a tupla fica pendente
+- [x] Chegada de transação ou recebível desse id tira o id da Maquinha e aplica as tuplas pendentes depois do lote, com a mesma regra de positivo e estorno
+- [x] Três chamadas em sequência (transação, recebível, confirmação MP) produzem o estado final da largada
+- [x] Testes só deste seam, fixtures em memória, sem arquivo, Excel, watcher ou ordem de log
 
 ## Comments
 

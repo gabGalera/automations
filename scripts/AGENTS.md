@@ -6,7 +6,7 @@ Issues live as markdown files under `.scratch/<feature>/` in this repo. See `doc
 
 ### Triage labels
 
-Default role strings: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+Default role strings: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Finished work is `completed`. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
