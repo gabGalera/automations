@@ -1,0 +1,3 @@
+# A planilha de output é projeção do consolidado
+
+O merge por id altera o consolidado num armazenamento local neste PC, fora do Drive. A planilha de output é gerada a partir desse consolidado para leitura no Excel: a cada merge, o arquivo inteiro. Se o Excel estiver com o arquivo aberto e o lock estourar, a próxima exportação (o merge seguinte, ou ao subir o processo) grava o consolidado vigente. Fica de fora manter a planilha como estado (o lock do Excel segura o merge) e tratar planilha e armazenamento como duas fontes que se releem. A planilha só tem a aba `consolidado`. As tuplas de confirmação MP já vistas ficam no armazenamento, não numa aba `controle`.
