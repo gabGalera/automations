@@ -8,7 +8,7 @@ import pytest
 from consolidacao.planilha import PlanilhaBloqueada, exportar
 
 
-def test_lock_estourado_sinaliza_o_chamador_e_nao_cria_outro_arquivo(tmp_path: Path):
+def test_lock_estourado_sinaliza_o_chamador_e_nao_cria_outro_arquivo(tmp_path: Path, monkeypatch):
     if sys.platform != "win32":
         pytest.skip("lock exclusivo de arquivo é do Windows")
     caminho = tmp_path / "output.xlsx"
@@ -22,14 +22,11 @@ def test_lock_estourado_sinaliza_o_chamador_e_nao_cria_outro_arquivo(tmp_path: P
     def dormir(segundos):
         relogio["t"] += segundos
 
+    monkeypatch.setattr("consolidacao.planilha.time_mod.monotonic", agora)
+    monkeypatch.setattr("consolidacao.planilha.time_mod.sleep", dormir)
     try:
         with pytest.raises(PlanilhaBloqueada):
-            exportar(
-                caminho,
-                [{"Cliente": "NAO DEVE GRAVAR"}],
-                agora=agora,
-                dormir=dormir,
-            )
+            exportar(caminho, [{"Cliente": "NAO DEVE GRAVAR"}])
     finally:
         ctypes.windll.kernel32.CloseHandle(handle)
 

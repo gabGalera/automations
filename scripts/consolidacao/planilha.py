@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time as time_mod
-from collections.abc import Callable
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -50,20 +49,12 @@ class PlanilhaBloqueada(OSError):
     pass
 
 
-def exportar(
-    caminho: Path,
-    consolidado: list[dict],
-    *,
-    agora: Callable[[], float] | None = None,
-    dormir: Callable[[float], None] | None = None,
-) -> None:
-    agora = agora or time_mod.monotonic
-    dormir = dormir or time_mod.sleep
+def exportar(caminho: Path, consolidado: list[dict]) -> None:
     wb = Workbook()
     aba = wb.active
     aba.title = ABA_CONSOLIDADO
     _escrever_consolidado(aba, consolidado)
-    _salvar_com_retry(wb, caminho, agora, dormir)
+    _salvar_com_retry(wb, caminho)
 
 
 def _eh_lock(exc: BaseException) -> bool:
@@ -74,20 +65,20 @@ def _eh_lock(exc: BaseException) -> bool:
     return False
 
 
-def _salvar_com_retry(wb: Workbook, caminho: Path, agora, dormir) -> None:
-    limite = agora() + RETRY_SEGUNDOS
+def _salvar_com_retry(wb: Workbook, caminho: Path) -> None:
+    limite = time_mod.monotonic() + RETRY_SEGUNDOS
     while True:
         try:
             wb.save(caminho)
             return
-        except OSError as extra:
-            if not _eh_lock(extra):
+        except OSError as erro:
+            if not _eh_lock(erro):
                 raise
-            if agora() >= limite:
+            if time_mod.monotonic() >= limite:
                 raise PlanilhaBloqueada(
-                    f"Não foi possível gravar {caminho}: {extra}"
-                ) from extra
-            dormir(RETRY_PASSO)
+                    f"Não foi possível gravar {caminho}: {erro}"
+                ) from erro
+            time_mod.sleep(RETRY_PASSO)
 
 
 def _escrever_consolidado(ws, consolidado: list[dict]) -> None:
@@ -102,15 +93,19 @@ def _set_cell(cell: Cell, nome: str, valor) -> None:
     if valor == "" or valor is None:
         cell.value = None
         return
-    if nome in COLUNAS_DATA and isinstance(valor, date) and not isinstance(valor, datetime):
-        cell.value = valor
-        cell.number_format = "DD/MM/YYYY"
-        return
-    if nome == "hora" and isinstance(valor, time):
-        cell.value = valor
-        cell.number_format = "HH:MM:SS"
-        return
-    if nome == COL_CONFIRMACAO and isinstance(valor, (int, float)) and not isinstance(valor, bool):
+    if nome in COLUNAS_DATA:
+        dia = _como_data(valor)
+        if dia is not None:
+            cell.value = dia
+            cell.number_format = "DD/MM/YYYY"
+            return
+    if nome == "hora":
+        horario = _como_hora(valor)
+        if horario is not None:
+            cell.value = horario
+            cell.number_format = "HH:MM:SS"
+            return
+    if nome == COL_CONFIRMACAO and _eh_numero(valor):
         cell.value = valor
         return
     if nome in COLUNAS_TEXTO:
@@ -118,3 +113,23 @@ def _set_cell(cell: Cell, nome: str, valor) -> None:
         cell.number_format = numbers.FORMAT_TEXT
         return
     cell.value = valor
+
+
+def _como_data(valor) -> date | None:
+    if isinstance(valor, datetime):
+        return valor.date()
+    if isinstance(valor, date):
+        return valor
+    return None
+
+
+def _como_hora(valor) -> time | None:
+    if isinstance(valor, datetime):
+        return valor.time().replace(microsecond=0)
+    if isinstance(valor, time):
+        return valor
+    return None
+
+
+def _eh_numero(valor) -> bool:
+    return isinstance(valor, (int, float)) and not isinstance(valor, bool)
