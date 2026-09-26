@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 03: Exportar a planilha de output
 
@@ -6,11 +6,11 @@ Status: ready-for-agent
 
 **Blocked by:** 01 Seam do motor
 
-- [ ] `output.xlsx` só com a aba `consolidado`, cabeçalho estável do spec, arquivo inteiro a cada exportação
-- [ ] `data`, `Data Repasse` e `Data Recibo MP` como data Excel; `hora` como hora Excel; `Confirmacao MP` como número; ids, textos e valores monetários no espírito do CSV continuam texto
-- [ ] Retry de lock de cerca de 60 segundos; falha só sinalizada ao chamador; sem `output.csv` e sem arquivo auxiliar permanente
-- [ ] A exportação não lê a planilha para decidir o merge
-- [ ] Testes que exigem a aba `controle` ou o round-trip antigo deixam de travar a suíte; round-trip de xlsx continua fora da suíte deste spec
+- [x] `output.xlsx` só com a aba `consolidado`, cabeçalho estável do spec, arquivo inteiro a cada exportação
+- [x] `data`, `Data Repasse` e `Data Recibo MP` como data Excel; `hora` como hora Excel; `Confirmacao MP` como número; ids, textos e valores monetários no espírito do CSV continuam texto
+- [x] Retry de lock de cerca de 60 segundos; falha só sinalizada ao chamador; sem `output.csv` e sem arquivo auxiliar permanente
+- [x] A exportação não lê a planilha para decidir o merge
+- [x] Testes que exigem a aba `controle` ou o round-trip antigo deixam de travar a suíte; round-trip de xlsx continua fora da suíte deste spec
 
 ## Comments
 
